@@ -1,2 +1,2 @@
-# PaTII
-Personalizing a Textbook on Individual Interests
+# PeTII
+Personalizing Textbooks on Individual Interests
