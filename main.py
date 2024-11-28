@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from tqdm import tqdm
 
-from pipeline import extract_concepts, personalize
+from pipeline import extract_concepts, create_overview, personalize
 from utils import read
 
 
@@ -26,11 +26,13 @@ def main(og_chapter_src:str, user_interest:str):
     print(f"Language: {language}\tConcepts: {concepts}")
 
     # First pass to Personalization LLM -- concept-by-concept
+    print("Crafting overview...")
+    draft = create_overview(p_client, concepts) + "\n\n"
+
     print("Personalizing concept-by-concept...")
-    draft = ""
     for concept in tqdm(concepts):
         section = personalize(p_client, language, concept, user_interest)
-        draft += section + '\n\n'
+        draft += section + "\n\n"
 
     # Save personalized chapter as a markdown file
     course_name, chapter_title = og_chapter_src.split("/")[1:3]

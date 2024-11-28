@@ -26,6 +26,29 @@ def extract_concepts(client, content:str):
     return res.language, res.concepts
 
 
+def create_overview(client, concepts:list[str]):
+    class Overview(BaseModel):
+        text: str
+
+    completion = client.beta.chat.completions.parse(
+        model="gpt-4o-2024-08-06",
+        messages=[
+            {
+                "role": "system",
+                "content": f"You are a helpful computer science (CS) professor. Given the set of CS concepts, write a brief overview for a CS textbook chapter that covers these concepts. Include an h1 title for the chapter and at most 2 paragraphs of overview. Your output should be in markdown format.",
+            },
+            {
+                "role": "user",
+                "content": f"CS concepts: {concepts}",
+            },
+        ],
+        response_format=Overview,
+    )
+
+    res = completion.choices[0].message.parsed
+    return res.text
+
+
 def personalize(client, language:str, concept:str, interest:str):
     class Content(BaseModel):
         text: str
