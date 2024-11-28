@@ -16,36 +16,44 @@ class Judge():
         self.final_explanation = ""
 
 
-    def give_feedback(self, PLLM) -> None:
+    def give_feedback(self, PLLM, PLLM_other=None, compete:bool=False) -> None:
         logger.info("Judge LLM giving feedback...")
 
         class Eval(BaseModel):
             category: str
             score: int
             explanation: str
-        
+
         class Evals(BaseModel):
             evals: list[Eval]
+
+        class EvalsCompetitive(BaseModel):
+            evals: list[Eval]
+            summary: str
 
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-2024-08-06",
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in {self.user_interest} and computer science. Please act as an objective judge and evaluate the quality of a modified computer science (CS) textbook chapter outputted by an AI assistant, which explains CS concepts using {self.user_interest} concepts. You will be given a reference textbook chapter that explains CS concepts without modifications. Your task is to score the modified textbook on three categories on a scale of 1 to 3, where 1 is unsatisfactory, 2 is semi-satisfactory, and 3 is satisfactory. In your output, include the category, the score, and your explanation for why you gave that score. The categories are:\n\n- All CS concepts from the reference chapter have been adequately covered\n- All CS concepts from the reference chapter have been accurately explained\n- The {self.user_interest} concepts are sufficiently used\n- The {self.user_interest} concepts are accurately used\n- The {self.user_interest} concepts do not overshadow the CS concepts (the main subject to be taught is CS)\n\nDo not allow the length of the responses to influence your evaluation. Be as objective as possible.",
+                    "content": f"You are an expert in {self.user_interest} and computer science. Please act as an objective judge and evaluate the quality of a modified computer science (CS) textbook chapter outputted by an AI assistant, which explains CS concepts using {self.user_interest} concepts. You will be given a reference textbook chapter that explains CS concepts without modifications. Your task is to score the modified textbook on four categories on a scale of 1 to 3, where 1 is unsatisfactory, 2 is semi-satisfactory, and 3 is satisfactory. In your output, include the category, the score, and your explanation for why you gave that score. The categories are:\n\n- All CS concepts from the reference chapter have been accurately explained\n- The {self.user_interest} concepts are sufficiently used\n- The {self.user_interest} concepts are accurately used\n- The {self.user_interest} concepts do not overshadow the CS concepts (the main subject to be taught is CS)\n\nDo not allow the length of the responses to influence your evaluation. Be as objective as possible.{' In your output, include a summary of what the AI assistant accomplished in making the modified chapter, as well as what you like and dislike about the modified chapter.' if compete else ''}",
                 },
                 {
                     "role": "user",
                     "content": f"[The Start of Reference Chapter]\n{self.reference_text}\n[The End of Reference Chapter]\n\n[The Start of Modified Chapter]\n{PLLM.draft}\n[The End of Modified Chapter]",
                 },
             ],
-            response_format=Evals,
+            response_format=EvalsCompetitive if compete else Evals,
         )
 
         res = completion.choices[0].message.parsed
 
         for eval in res.evals:
             PLLM.judge_feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
+
+        if compete:
+            PLLM_other.judge_summ_opp = res.summary
+            self._save_summary(PLLM, PLLM_other)
 
         self._save_feedback(PLLM)
 
@@ -85,6 +93,13 @@ class Judge():
         with open(f"{self.save_dir}/{PLLM.name}/feedback.md", "w") as file:
             file.write(PLLM.judge_feedback)
             logger.info(f"Judge feedback for {PLLM.name} saved in {self.save_dir}/{PLLM.name}/feedback.md")
+
+
+    def _save_summary(self, PLLM, PLLM_other) -> None:
+        Path(f"{self.save_dir}/{PLLM_other.name}").mkdir(parents=True, exist_ok=True)
+        with open(f"{self.save_dir}/{PLLM_other.name}/opp_summary.md", "w") as file:
+            file.write(PLLM_other.judge_summ_opp)
+            logger.info(f"Judge summary for {PLLM.name} given to {PLLM_other.name} saved in {self.save_dir}/{PLLM_other.name}/opp_summary.md")
 
 
     def _save_verdict(self) -> None:

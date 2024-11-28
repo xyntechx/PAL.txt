@@ -15,6 +15,7 @@ class PersonalizerChapter():
 
         self.draft = ""
         self.judge_feedback = ""
+        self.judge_summ_opp = ""
 
         self.final_draft = ""
 
@@ -56,11 +57,11 @@ class PersonalizerChapter():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is open to feedback. You have previously crafted the provided CS textbook chapter for a friend who is interested in {self.user_interest}. Address the provided feedback to improve the CS textbook chapter. The improved chapter should be similar in structure to the old chapter; your improvements does not need to drastically change the old chapter.",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is open to feedback. You have previously crafted the provided CS textbook chapter for a friend who is interested in {self.user_interest}. Address the provided feedback to improve the CS textbook chapter. The improved chapter should be similar in structure to the old chapter; your improvements does not need to drastically change the old chapter.{' You are also given an evaluation summary of a CS textbook chapter modified by another AI assistant; you may learn from that summary to improve your own chapter.' if self.judge_summ_opp else ''}",
                 },
                 {
                     "role": "user",
-                    "content": f"[The Start of Old Chapter]\n{self.draft}\n[The End of Old Chapter]\n\n[The Start of Feedback]\n{self.judge_feedback}\n[The End of Feedback]",
+                    "content": f"[The Start of Old Chapter]\n{self.draft}\n[The End of Old Chapter]\n\n[The Start of Feedback for Your Work]\n{self.judge_feedback}\n[The End of Feedback for Your Work]\n\n[The Start of Evaluation Summary for Another Assistant's Work]\n{self.judge_summ_opp}\n[The End of Evaluation Summary for Another Assistant's Work]",
                 },
             ],
             response_format=Content,
