@@ -6,15 +6,17 @@ from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
 
-from pipeline import extract_concepts, create_overview, personalize, judge, personalize_refine
+from pipeline import extract_concepts, create_overview, personalize, give_feedback, personalize_refine, compare
 from utils import read
 
 
 def main(og_chapter_src:str, user_interest:str):
     load_dotenv()
 
-    # Create Personalization LLM
-    p_client = OpenAI()
+    # Create Personalization LLM A
+    p_a_client = OpenAI()
+    # Create Personalization LLM B
+    p_b_client = OpenAI()
     # Create Judge LLM
     j_client = OpenAI() # TODO: implement + make togglable for testing
 
@@ -28,24 +30,9 @@ def main(og_chapter_src:str, user_interest:str):
     save_dir = f"output/{course_name}/{chapter_title}/{curr_date.year}{curr_date.month}{curr_date.day}"
     Path(save_dir).mkdir(parents=True, exist_ok=True)
 
-    # # ? Feedback whole chapter below
-    # # ? (draft is whole text)
-    # # Evaluate first-pass personalization
-    # print("Judge LLM giving feedback...")
-    # feedback = ""
-    # judge_evals = judge(j_client, user_interest, content, draft)
-    # for eval in judge_evals:
-    #     feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
-    
-    # # Second pass to Personalization LLM
-    # print("Improving personalization based on feedback...")
-    # final_draft = personalize_refine(p_client, user_interest, draft, feedback)
-    # # ? Feedback whole chapter above
-
-
     # Extract the programming language (if any) and technical concepts from the original chapter
     print("Extracting concepts...")
-    language, concepts = extract_concepts(p_client, content)
+    language, concepts = extract_concepts(p_a_client, content)
 
     # Save specs as a txt file
     with open(f"{save_dir}/specs.txt", "w") as file:
@@ -54,12 +41,12 @@ def main(og_chapter_src:str, user_interest:str):
 
     # First pass to Personalization LLM -- create overview
     print("Crafting overview...")
-    draft = [create_overview(p_client, concepts)]
+    draft = [create_overview(p_a_client, concepts)]
 
     # First pass to Personalization LLM -- concept-by-concept personalization
     print("Personalizing concept-by-concept...")
     for concept in tqdm(concepts):
-        section = personalize(p_client, language, concept, user_interest)
+        section = personalize(p_a_client, language, concept, user_interest)
         draft.append(section)
     
     # Save draft personalized chapter as a markdown file
@@ -67,11 +54,25 @@ def main(og_chapter_src:str, user_interest:str):
         file.write("\n\n".join(draft))
         print(f"Draft personalized chapter saved in {save_dir}/draft.md")
 
+    # # ? Feedback whole chapter below
+    # # ? (draft is whole text)
+    # # Evaluate first-pass personalization
+    # print("Judge LLM giving feedback...")
+    # feedback = ""
+    # judge_evals = give_feedback(j_client, user_interest, content, draft)
+    # for eval in judge_evals:
+    #     feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
+    
+    # # Second pass to Personalization LLM
+    # print("Improving personalization based on feedback...")
+    # final_draft = personalize_refine(p_b_client, user_interest, draft, feedback)
+    # # ? Feedback whole chapter above
+
     # ? Feedback concept-by-concept below
     # Evaluate first-pass personalization
     print("Judge LLM giving feedback...")
     feedback = ""
-    judge_evals = judge(j_client, user_interest, content, "\n\n".join(draft))
+    judge_evals = give_feedback(j_client, user_interest, content, "\n\n".join(draft))
     for eval in judge_evals:
         feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
     
@@ -84,7 +85,7 @@ def main(og_chapter_src:str, user_interest:str):
     print("Improving personalization based on feedback...")
     final_draft = []
     for section in tqdm(draft[1:]): # exclude overview from refinement
-        final_draft.append(personalize_refine(p_client, user_interest, section, feedback))
+        final_draft.append(personalize_refine(p_a_client, user_interest, section, feedback))
     # ? Feedback concept-by-concept above
 
     # Save final personalized chapter as a markdown file

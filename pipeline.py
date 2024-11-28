@@ -110,7 +110,7 @@ def personalize_refine(client, interest:str, subsection:str, feedback:str):
 ######################
 
 
-def judge(client, interest:str, reference:str, modified:str):
+def give_feedback(client, interest:str, reference:str, modified:str):
     class Eval(BaseModel):
         category: str
         score: int
@@ -124,7 +124,7 @@ def judge(client, interest:str, reference:str, modified:str):
         messages=[
             {
                 "role": "system",
-                "content": f"You are an expert in {interest} and computer science. Please act as an objective judge and evaluate the quality of a modified computer science (CS) textbook chapter outputted by an AI assistant, which explains CS concepts using {interest} concepts. You will be given a reference textbook chapter that explains CS concepts without modifications. Your task is to score the modified textbook on three categories on a scale of 1 to 3, where 1 is unsatisfactory, 2 is semi-satisfactory, and 3 is satisfactory. In your output, include the category, the score, and your explanation for why you gave that score. The categories are:\n\n- All CS concepts from the original chapter have been adequately covered\n- All CS concepts from the original chapter have been accurately explained\n- The {interest} concepts are accurately used\n\nDo not allow the length of the responses to influence your evaluation. Be as objective as possible.",
+                "content": f"You are an expert in {interest} and computer science. Please act as an objective judge and evaluate the quality of a modified computer science (CS) textbook chapter outputted by an AI assistant, which explains CS concepts using {interest} concepts. You will be given a reference textbook chapter that explains CS concepts without modifications. Your task is to score the modified textbook on three categories on a scale of 1 to 3, where 1 is unsatisfactory, 2 is semi-satisfactory, and 3 is satisfactory. In your output, include the category, the score, and your explanation for why you gave that score. The categories are:\n\n- All CS concepts from the reference chapter have been adequately covered\n- All CS concepts from the reference chapter have been accurately explained\n- The {interest} concepts are sufficiently used\n- The {interest} concepts are accurately used\n- The {interest} concepts do not overshadow the CS concepts (the main subject to be taught is CS)\n\nDo not allow the length of the responses to influence your evaluation. Be as objective as possible.",
             },
             {
                 "role": "user",
@@ -136,6 +136,30 @@ def judge(client, interest:str, reference:str, modified:str):
 
     res = completion.choices[0].message.parsed
     return res.evals
+
+
+def compare(client, interest:str, draft_a:str, draft_b:str):
+    class Verdict(BaseModel):
+        choice: str
+        explanation: str
+
+    completion = client.beta.chat.completions.parse(
+        model="gpt-4o-2024-08-06",
+        messages=[
+            {
+                "role": "system",
+                "content": f"Please act as an impartial judge and evaluate the quality of the modified computer science (CS) textbook chapters outputted by two AI assistants. The chapters explain CS concepts using {interest} concepts. Your evaluation is from the perspective of someone who is interested in {interest} but is new to the CS concepts. Your job is to evaluate which assistant's chapter is more effective for you to learn CS.\n\nAvoid any position biases and ensure that the order in which the responses were presented does not influence your decision. Do not allow the length of the responses to influence your evaluation. Do not favor certain names of the assistants. Be as objective as possible. After providing your explanation, output your final verdict in the 'choice' field by strictly following this format: 'A' if assistant A is better, 'B' if assistant B is better, and 'C' for a tie. Include a brief explanation of your choice in the output.",
+            },
+            {
+                "role": "user",
+                "content": f"[The Start of Assistant A's Chapter]\n{draft_a}\n[The End of Assistant A's Chapter]\n\n[The Start of Assistant B's Chapter]\n{draft_b}\n[The End of Assistant B's Chapter]",
+            },
+        ],
+        response_format=Verdict,
+    )
+
+    res = completion.choices[0].message.parsed
+    return res.choice, res.explanation
 
 
 ####################
