@@ -13,8 +13,14 @@ pip install --upgrade pip wheel
 pip install -r requirements.txt
 ```
 
-## Running (Example)
-Personalizing UC Berkeley CS61B Chapter 4 on astrophysics interest
+## Usage
+
+Generate personalized chapter(s)
 ```
-python main.py -c og-textbooks/berkeley-cs61b/4.-sllists.md -i astrophysics
+python gen.py -c path/to/original_chapter.md -i "user interest"
+```
+
+Evaluate/compare personalized chapters
+```
+python eval.py -a path/to/final_draft_one.md -b path/to/final_draft_two.md -i "user interest"
 ```

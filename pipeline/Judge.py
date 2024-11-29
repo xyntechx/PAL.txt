@@ -74,7 +74,7 @@ class Judge():
                 },
                 {
                     "role": "user",
-                    "content": f"[The Start of Assistant {PLLM_a.name}'s Chapter]\n{PLLM_a.draft}\n[The End of Assistant {PLLM_a.name}'s Chapter]\n\n[The Start of Assistant {PLLM_b.name}'s Chapter]\n{PLLM_b.draft}\n[The End of Assistant {PLLM_b.name}'s Chapter]",
+                    "content": f"[The Start of Assistant {PLLM_a.name}'s Chapter]\n{PLLM_a.final_draft}\n[The End of Assistant {PLLM_a.name}'s Chapter]\n\n[The Start of Assistant {PLLM_b.name}'s Chapter]\n{PLLM_b.final_draft}\n[The End of Assistant {PLLM_b.name}'s Chapter]",
                 },
             ],
             response_format=Verdict,
