@@ -90,21 +90,21 @@ class Judge():
 
     def _save_feedback(self, PLLM) -> None:
         Path(f"{self.save_dir}/{PLLM.name}").mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/{PLLM.name}/feedback.md", "w") as file:
+        with open(f"{self.save_dir}/{PLLM.name}/feedback.md", "w", encoding="utf-8") as file:
             file.write(PLLM.judge_feedback)
             logger.info(f"Judge feedback for {PLLM.name} saved in {self.save_dir}/{PLLM.name}/feedback.md")
 
 
     def _save_summary(self, PLLM, PLLM_other) -> None:
         Path(f"{self.save_dir}/{PLLM_other.name}").mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/{PLLM_other.name}/opp_summary.md", "w") as file:
+        with open(f"{self.save_dir}/{PLLM_other.name}/opp_summary.md", "w", encoding="utf-8") as file:
             file.write(PLLM_other.judge_summ_opp)
             logger.info(f"Judge summary for {PLLM.name} given to {PLLM_other.name} saved in {self.save_dir}/{PLLM_other.name}/opp_summary.md")
 
 
     def _save_verdict(self) -> None:
         Path(self.save_dir).mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/verdict.txt", "w") as file:
+        with open(f"{self.save_dir}/verdict.txt", "w", encoding="utf-8") as file:
             verdict = f"Choice: {self.final_choice}\n\nExplanation:\n{self.final_explanation}"
             file.write(verdict)
             logger.info(f"Judge verdict saved in {self.save_dir}/verdict.txt")

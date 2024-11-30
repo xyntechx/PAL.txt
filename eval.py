@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     # Document final draft paths
     Path(save_dir).mkdir(parents=True, exist_ok=True)
-    with open(f"{save_dir}/final_draft_paths.txt", "w") as file:
+    with open(f"{save_dir}/final_draft_paths.txt", "w", encoding="utf-8") as file:
         file.write(f"A: {args.content_one}\nB: {args.content_two}")
         logger.info(f"Final draft paths used logged in {save_dir}/final_draft_paths.txt")
 

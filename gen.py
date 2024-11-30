@@ -145,7 +145,7 @@ def main(og_chapter_src:str, user_interest:str, strategy_name:str):
 
     # Document execution strategy
     Path(save_dir).mkdir(parents=True, exist_ok=True)
-    with open(f"{save_dir}/strategy.txt", "w") as file:
+    with open(f"{save_dir}/strategy.txt", "w", encoding="utf-8") as file:
         file.write(f"Strategy: {strategy_name}")
         logger.info(f"Strategy logged in {save_dir}/strategy.txt")
 
