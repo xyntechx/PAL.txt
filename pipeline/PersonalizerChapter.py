@@ -31,7 +31,7 @@ class PersonalizerChapter():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Personalize the provided CS textbook chapter based on {self.user_interest} content. Keep your output as faithful to the original chapter as possible while including a sufficient amount of {self.user_interest} content.",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Personalize the provided CS textbook chapter based on {self.user_interest} content. Ensure the layout of your personalized chapter closely follows the layout of the original chapter.",
                 },
                 {
                     "role": "user",
