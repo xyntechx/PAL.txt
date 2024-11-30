@@ -1,5 +1,5 @@
-# PeTII
-Personalizing Textbooks on Individual Interests
+# PAL.txt
+Personalizations for Associative Learning on Textbooks
 
 ## Setup
 Create virtual env
