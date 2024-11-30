@@ -57,7 +57,7 @@ class PersonalizerChapter():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is open to feedback. You have previously crafted the provided CS textbook chapter for a friend who is interested in {self.user_interest}. Address the provided feedback to improve the CS textbook chapter. The improved chapter should be similar in structure to the old chapter; your improvements does not need to drastically change the old chapter.{' You are also given an evaluation summary of a CS textbook chapter modified by another AI assistant; you may learn from that summary to improve your own chapter.' if self.judge_summ_opp else ''}",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is open to feedback. You have previously crafted the provided CS textbook chapter for a friend who is interested in {self.user_interest}. Address the provided feedback to improve the CS textbook chapter. The improved chapter should be similar in structure to the old chapter; your improvements does not need to drastically change the old chapter.{' You are also given an evaluation summary of a CS textbook chapter modified by another AI assistant; you may learn from that summary to improve your own chapter. Do not output any comments about the summary or your improvements, and output the chapter directly.' if self.judge_summ_opp else ''}",
                 },
                 {
                     "role": "user",
@@ -74,14 +74,14 @@ class PersonalizerChapter():
 
     def _save_draft(self) -> None:
         Path(f"{self.save_dir}/{self.name}").mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/{self.name}/draft.md", "w") as file:
+        with open(f"{self.save_dir}/{self.name}/draft.md", "w", encoding="utf-8") as file:
             file.write(self.draft)
             logger.info(f"Draft personalized chapter saved in {self.save_dir}/{self.name}/draft.md")
 
 
     def _save_final(self) -> None:
         Path(f"{self.save_dir}/{self.name}").mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/{self.name}/final_draft.md", "w") as file:
+        with open(f"{self.save_dir}/{self.name}/final_draft.md", "w", encoding="utf-8") as file:
             file.write(self.final_draft)
             logger.info(f"Final personalized chapter saved in {self.save_dir}/{self.name}/final_draft.md")
 
