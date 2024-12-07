@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 Generate personalized chapter(s)
 ```
-python gen.py -c path/to/original_chapter.md -i "user interest"
+python gen.py -c path/to/original_chapter.md -i "<user interest>" -s "<strategy>"
 ```
 
 Evaluate/compare personalized chapters
