@@ -1,0 +1,3 @@
+Language: Java
+
+Concepts: ['Lists', 'The Mystery of the Walrus', 'Bits', 'Declaring a Variable (Simplified)', 'The Golden Rule of Equals (GRoE)', 'Reference Types', 'Parameter Passing', 'Instantiation of Arrays', 'IntLists']
