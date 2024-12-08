@@ -150,7 +150,7 @@ class PersonalizerConcept():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Explain the provided CS concept in terms of {self.user_interest} concepts. Your explanation will be just one subsection of a CS textbook chapter. Include the concept as an h2 header, and subparts as one h3 header each (rephrase each subpart so that it is presentable to a student). Avoid numbering the headers and subheaders.{code_instructions}{layout_instructions}",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Explain the provided CS concept in terms of {self.user_interest} concepts. Your explanation will be just one subsection of a CS textbook chapter. Include the concept as an h2 header, and subparts as one h3 header each (rephrase each subpart so that it is presentable to a student). Avoid numbering the headers and subheaders. Replace specific examples with examples related to {self.user_interest}.{code_instructions}{layout_instructions}",
                 },
                 {
                     "role": "user",
