@@ -27,6 +27,8 @@ class PersonalizerConcept():
         self.final_chunks = []
         self.final_draft = ""
 
+        self.judge_score = ""
+
 
     def extract_concepts(self) -> None:
         logger.info(f"{self.name} extracting concepts...")

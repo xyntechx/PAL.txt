@@ -20,6 +20,8 @@ def main(content_one:str, content_two:str, user_interest:str, save_dir:str):
 
     # Eval outputs
     j_llm.compare(p_a_llm, p_b_llm)
+    j_llm.score(p_a_llm)
+    j_llm.score(p_b_llm)
 
 
 if __name__ == "__main__":
