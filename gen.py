@@ -8,20 +8,20 @@ from pipeline import pipeline
 from utils import read
 
 
-def ch_no_j(reference_text:str, user_interest:str, save_dir:str):
+def no_recomp(reference_text:str, user_interest:str, save_dir:str):
     # Initialize LLMs
-    p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
-
-    # Run whole-chapter Personalization LLM -- draft
-    p_b_llm.extract_sections()
-    p_b_llm.personalize()
-    p_b_llm.create_overview()
-
-
-def ch_with_j(reference_text:str, user_interest:str, save_dir:str):
-    # Initialize LLMs
+    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
     p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
     j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
+
+    # Run content-by-content Personalization LLM -- draft
+    p_a_llm.extract_concepts()
+    p_a_llm.write_outline()
+    p_a_llm.create_overview()
+    p_a_llm.personalize(with_outline=True)
+
+    # Give feedback to content-by-content Personalization LLM
+    j_llm.give_feedback(p_a_llm, PLLM_other=p_b_llm)
 
     # Run whole-chapter Personalization LLM -- draft
     p_b_llm.extract_sections()
@@ -29,60 +29,7 @@ def ch_with_j(reference_text:str, user_interest:str, save_dir:str):
     p_b_llm.create_overview()
 
     # Give feedback to whole-chapter Personalization LLM
-    j_llm.give_feedback(p_b_llm)
-
-    # Run whole-chapter Personalization LLM -- refinement
-    p_b_llm.refine()
-
-
-def co_no_j(reference_text:str, user_interest:str, save_dir:str):
-    # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-
-    # Run content-by-content Personalization LLM -- draft
-    p_a_llm.extract_concepts()
-    p_a_llm.create_overview()
-    p_a_llm.personalize()
-
-
-def co_with_j(reference_text:str, user_interest:str, save_dir:str):
-    # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-    j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
-
-    # Run content-by-content Personalization LLM -- draft
-    p_a_llm.extract_concepts()
-    p_a_llm.create_overview()
-    p_a_llm.personalize()
-
-    # Give feedback to content-by-content Personalization LLM
-    j_llm.give_feedback(p_a_llm)
-
-    # Run content-by-content Personalization LLM -- refinement
-    p_a_llm.refine()
-
-
-def se_compete(reference_text:str, user_interest:str, save_dir:str):
-    # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-    p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
-    j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
-
-    # Run content-by-content Personalization LLM -- draft
-    p_a_llm.extract_concepts()
-    p_a_llm.create_overview()
-    p_a_llm.personalize()
-
-    # Give feedback to content-by-content Personalization LLM
-    j_llm.give_feedback(p_a_llm)
-
-    # Run whole-chapter Personalization LLM -- draft
-    p_b_llm.extract_sections()
-    p_b_llm.personalize()
-    p_b_llm.create_overview()
-
-    # Give feedback to whole-chapter Personalization LLM
-    j_llm.give_feedback(p_b_llm)
+    j_llm.give_feedback(p_b_llm, PLLM_other=p_a_llm)
 
     # Run content-by-content Personalization LLM -- refinement
     p_a_llm.refine()
@@ -93,37 +40,9 @@ def se_compete(reference_text:str, user_interest:str, save_dir:str):
     # Compare refined drafts
     j_llm.compare(p_a_llm, p_b_llm)
 
-
-def re_compete(reference_text:str, user_interest:str, save_dir:str):
-    # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-    p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
-    j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
-
-    # Run content-by-content Personalization LLM -- draft
-    p_a_llm.extract_concepts()
-    p_a_llm.create_overview()
-    p_a_llm.personalize()
-
-    # Give feedback to content-by-content Personalization LLM
-    j_llm.give_feedback(p_a_llm, PLLM_other=p_b_llm, compete=True)
-
-    # Run whole-chapter Personalization LLM -- draft
-    p_b_llm.extract_sections()
-    p_b_llm.personalize()
-    p_b_llm.create_overview()
-
-    # Give feedback to whole-chapter Personalization LLM
-    j_llm.give_feedback(p_b_llm, PLLM_other=p_a_llm, compete=True)
-
-    # Run content-by-content Personalization LLM -- refinement
-    p_a_llm.refine()
-
-    # Run whole-chapter Personalization LLM -- refinement
-    p_b_llm.refine()
-
-    # Compare refined drafts
-    j_llm.compare(p_a_llm, p_b_llm)
+    # Score each PLLM's final drafts
+    j_llm.score(p_a_llm)
+    j_llm.score(p_b_llm)
 
 
 def complete(reference_text:str, user_interest:str, save_dir:str):
@@ -190,13 +109,8 @@ if __name__ == "__main__":
     load_dotenv()
 
     STRATEGIES = {
-        "ch_no_j": ch_no_j, # only whole-chapter personalization, no judge
-        "ch_with_j": ch_with_j, # only whole-chapter personalization, with judge
-        "co_no_j": co_no_j, # only content-by-content personalization, no judge
-        "co_with_j": co_with_j, # only content-by-content personalization, with judge
-        "se_compete": se_compete, # both content-by-content and whole-chapter personalization, compete separately
-        "re_compete": re_compete, # both content-by-content and whole-chapter personalization, Reinforcement Competition
-        "complete": complete # Reinforcement Competition + outline/layout extraction
+        "complete": complete, # all components included
+        "no_recomp": no_recomp, # all components included except Reinforcement Competition
     }
 
     parser = ArgumentParser()

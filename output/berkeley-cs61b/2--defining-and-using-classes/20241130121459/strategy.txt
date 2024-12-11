@@ -1,1 +1,0 @@
-Strategy: re_compete

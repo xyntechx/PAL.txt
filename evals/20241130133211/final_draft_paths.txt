@@ -1,2 +1,0 @@
-A: output/berkeley-cs61b/2--defining-and-using-classes/20241130132845/B/draft.md
-B: output/berkeley-cs61b/2--defining-and-using-classes/20241130132845/B/final_draft.md
