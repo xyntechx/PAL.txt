@@ -1,239 +1,118 @@
-# Static vs. Non-Static Methods
+# Introduction to Java Classes and Methods
 
-In this chapter, we explore the fundamental distinction between static and non-static methods in Java programming, emphasizing their role and implementation. Static methods, marked by the `static` keyword, are associated directly with the class they belong to, meaning they can be invoked using the class name without needing an object instance. This is illustrated through examples, including the `emitLight` method in the `Star` class and the usage of utility methods like `Math.sqrt`. On the other hand, non-static methods, or instance methods, are tied to specific instances of a class, thus requiring object instantiation to be called. The chapter delves into these concepts, demonstrating how instance variables can alter the behavior of an instance method, as seen in variations of the `Star` class where the `emitLight` method's output depends on the mass assigned to a particular instance.
+This chapter introduces fundamental concepts related to Java programming, employing an analogy to the universe to clarify the intricacies of object-oriented programming. Key terminologies are explored starting with **classes**, which are likened to blueprints that dictate the behavior of *objects* - the tangible manifestations of these blueprints. The discussion progresses to **static** and **instance methods**: static methods relate to a class as a whole, whereas instance methods operate on specific instances, similar to how gravitational forces act differently depending on the celestial bodies involved. Insights into **instance variables** and **constructors** help elucidate how objects attain unique properties and initialization rites, akin to cosmic formations.
 
-The chapter further expands on constructors and how they facilitate object initialization, saving time and improving clarity by allowing parameters to govern instance variable assignment at the object's creation. Additionally, it introduces static and instance variables, explaining their access and usage within different methods types, emphasizing good coding practices. The text also covers the instantiation of arrays and their ability to contain objects, illustrating how to manage collections of class instances. Finally, the chapter touches upon the significance of the `main` method in Java as a static entry point, the utility of handling command-line arguments, and the importance of understanding and using existing libraries responsibly in programming. Together, these concepts form a solid foundation in understanding Java's object-oriented functionalities and preparing for more advanced topics.
+The chapter further explains the instantiation of arrays in Java, specifically arrays of objects, using real-world astrophysical examples. By leveraging code snippets, readers gain familiarity with creating and manipulating arrays intended to simulate celestial systems. The section on **static and instance methods** emphasizes their respective roles and practical use-cases within astronomical calculations. Finally, the chapter explores **static variables** and the `main` method's importance, touching upon command line arguments and the effective use of external libraries within Java programming. This cosmic journey through Java's object-oriented architecture equips readers with foundational skills for understanding and implementing complex simulations.
 
-Static vs. Non-Static Methods
+All of our major terminologies of this section are collected here:
 
-**Static Methods**
+1. **Class**: To continue with our universe analogy, a class in Java can be thought of as a cosmic blueprint. Just as the laws of physics govern the behavior of celestial bodies, Java's class definitions dictate the behavior of objects.
 
-All code in Java must be part of a class (or something similar to a class, which we'll learn about later). Most code is written inside of methods. Let's consider an example:
+2. **Static Method**: A phenomenon inherent to stellar constellations that does not change or vary across different instances, like a star that maintains a constant luminosity regardless of its surrounding celestial sphere. Static methods belong to a class rather than to individual objects.
 
-```java
-public class Star {
-    public static void emitLight() {
-        System.out.println("Shine!");
-    }
-}
-```
+3. **Instance Variable**: Much like the unique properties of individual stars, such as brightness or spectral class, instance variables are unique properties that belong to each object. These could be the mass, radius, or metallicity in the realm of stars, analogous to weight in our `Dog` class.
 
-If we try running the `Star` class, we'll simply get an error message:
+4. **Instance Method**: Comparable to gravitational influences unique to each celestial body. These methods perform actions dependent on the instance they're associated with, like how a star's gravitational pull affects its nearby planets individually.
 
-```
-$ java Star
-Error: Main method not found in class Star, please define the main method as:
-       public static void main(String[] args)
-```
+5. **Constructor**: This is akin to the formation of a new star in a nebula, where initial conditions dictate its trajectory and evolution. A constructor initializes an object's properties at the cosmic moment of its creation.
 
-The `Star` class we've defined doesn't do anything. We've simply defined something that `Star` **can** do, namely emit light. To actually run the class, we'd either need to add a main method to the `Star` class, as we saw in chapter 1.1. Or we could create a separate [`StarLauncher`](https://www.youtube.com/watch?v=Q-LE-jJQLTM) class that runs methods from the `Star` class. For example, consider the program below:
+6. **Object**: An instance of a class represents a tangible manifestation of matter within the cosmic system you create in your program. In our universe metaphor, objects are analogous to individual celestial bodies, like stars or planets, birthed from their defining classes.
 
-```java
-public class StarLauncher {
-    public static void main(String[] args) {
-        Star.emitLight();
-    }
-}
-```
+7. **Client Class**: Just as a planetary system relies on a star’s energy, a client class relies on another class. It uses the functionality and behaviors defined by another class to serve its own purpose or drive its methods, much like how life thrives under the energizing rays of a star system.
 
-```
-$ java StarLauncher
-Shine!
-```
+By channeling our understanding of universe phenomena into Java constructs, we foster a greater appreciation of both fields and enrich our tapestry of knowledge across the sciences. As we advance, the vast methods and instances of our programming cosmos will become as wondrous and expansive as the stars that blanket our night sky.
 
-A class that uses another class is sometimes called a "client" of that class, i.e. `StarLauncher` is a client of `Star`. Neither of the two techniques is better: Adding a main method to `Star` may be better in some situations, and creating a client class like `StarLauncher` may be better in others. The relative advantages of each approach will become clear as we gain additional practice throughout the course.
+**Array Instantiation, Arrays of Objects in Astrophysics**
 
-**Instance Variables and Object Instantiation**
-
-Not all stars are alike. Some stars twinkle faintly in the vast cosmos, while others blaze fiercely, illuminating entire galaxies with their radiant glow. Often, we write programs to mimic features of the universe we inhabit, and Java's syntax was crafted to easily allow such mimicry.
-
-One approach to allowing us to represent the spectrum of Stardom would be to create separate classes for each type of Star.
-
-```java
-public class DwarfStar {
-    public static void emitLight() {
-        System.out.println("flicker flicker flicker");
-    }
-}
-
-public class SupernovaStar {
-    public static void emitLight() {
-        System.out.println("kaboom!");
-    }
-}
-```
-
-As you should have seen in the past, classes can be instantiated, and instances can hold data. This leads to a more natural approach, where we create instances of the `Star` class and make the behavior of the `Star` methods contingent upon the properties of the specific `Star`. To make this more concrete, consider the class below:
-
-```java
-public class Star {
-    public double mass;
-
-    public void emitLight() {
-        if (mass < 1.0) {
-            System.out.println("twinkle, twinkle, little star.");
-        } else if (mass < 10.0) {
-            System.out.println("shine. shine.");
-        } else {
-            System.out.println("blinding brightness!");
-        }
-    }    
-}
-```
-
-As an example of using such a Star, consider:
-
-```java
-public class StarLauncher {
-    public static void main(String[] args) {
-        Star s;
-        s = new Star();
-        s.mass = 5.0;
-        s.emitLight();
-    }
-}
-```
-
-When run, this program will create a `Star` with mass 5.0, and that `Star` will soon let out a nice "shine. shine.".
-
-Some key observations and terminology:
-
-* An `Object` in Java is an instance of any class.
-* The `Star` class has its own variables, also known as _instance variables_ or _non-static variables_. These must be declared inside the class, unlike languages like Python or Matlab, where new variables can be added at runtime.
-* The method that we created in the `Star` class did not have the `static` keyword. We call such methods _instance methods_ or _non-static methods_.
-* To call the `emitLight` method, we had to first _instantiate_ a `Star` using the `new` keyword, and then make a specific `Star` shine. In other words, we called `s.emitLight()` instead of `Star.emitLight()`.
-* Once an object has been instantiated, it can be _assigned_ to a _declared_ variable of the appropriate type, e.g. `s = new Star();`
-* Variables and methods of a class are also called _members_ of a class.
-* Members of a class are accessed using _dot notation_.
-
-**Constructors in Java**
-
-As you've hopefully seen before, we usually construct objects in object oriented languages using a _constructor_:
-
-```java
-public class StarLauncher {
-    public static void main(String[] args) {
-        Star s = new Star(5.0);
-        s.emitLight();
-    }
-}
-```
-
-Here, the instantiation is parameterized, saving us the time and messiness of manually typing out potentially many instance variable assignments. To enable such syntax, we need only add a "constructor" to our Star class, as shown below:
-
-```java
-public class Star {
-    public double mass;
-
-    public Star(double m) {
-        mass = m;
-    }
-
-    public void emitLight() {
-        if (mass < 1.0) {
-            System.out.println("twinkle, twinkle, little star.");
-        } else if (mass < 10.0) {
-            System.out.println("shine. shine.");
-        } else {
-            System.out.println("blinding brightness!");
-        }    
-    }
-}
-```
-
-The constructor with signature `public Star(double m)` will be invoked anytime that we try to create a `Star` using the `new` keyword and a single double parameter. For those of you coming from Python, the constructor is very similar to the `__init__` method.
-
-Array Instantiation, Arrays of Astrophysical Objects
-
-As we saw in HW0, arrays are also instantiated in Java using the new keyword. For example:
+As we saw in HW0, arrays are also instantiated in Java using the new keyword. Consider a scenario where we want to model a set of celestial objects in a simulation:
 
 ```java
 public class ArrayDemo {
     public static void main(String[] args) {
-        /* Create an array of five stars. */
-        int[] starArray = new int[5];
-        starArray[0] = 3;
-        starArray[1] = 4;
+        /* Create an array of five celestial body masses, in kilograms. */
+        double[] celestialMassesArray = new double[5];
+        celestialMassesArray[0] = 5.972e24; // Mass of Earth
+        celestialMassesArray[1] = 1.989e30; // Mass of Sun
     }
 }
 ```
 
-Similarly, we can create arrays of instantiated astrophysical objects in Java, e.g.
+Similarly, we can create arrays of instantiated astronomical objects in Java, for instance:
 
 ```java
-public class PlanetArrayDemo {
+public class StarArrayDemo {
     public static void main(String[] args) {
-        /* Create an array of two planets. */
-        Planet[] planets = new Planet[2];
-        planets[0] = new Planet(8.0);
-        planets[1] = new Planet(20.0);
+        /* Create an array of two stars. */
+        Star[] stars = new Star[2];
+        stars[0] = new Star("Sun", 1.989e30);
+        stars[1] = new Star("Sirius", 3.978e30);
 
-        /* Observe the gravitational impact, since planets[0] has a mass of 8.0. */
-        planets[0].exertGravity();
+        /* Calling lightEmission will show the energy output of stars[0]. */
+        stars[0].lightEmission();
     }
 }
 ```
 
-Observe that new is used in two different ways: Once to create an array that can hold two `Planet` objects, and twice to create each actual `Planet`.
+Observe that `new` is used in two different ways: Once to create an array that can hold two `Star` objects, and twice to create each actual `Star`.
 
 #### Class Methods vs. Instance Methods <a href="#class-methods-vs-instance-methods" id="class-methods-vs-instance-methods"></a>
 
-Java allows us to define two types of methods:
+In the context of astrophysics simulation software, Java allows us to define two types of methods:
 
 * Class methods, a.k.a. static methods.
 * Instance methods, a.k.a. non-static methods.
 
-Instance methods are actions that can be taken only by a specific instance of a class. Static methods are actions that are taken by the class itself. Both are useful in different circumstances. As an example of a static method, the `Math` class provides a `sqrt` method. Because it is static, we can call it as follows:
+Instance methods perform actions on specific instances of an astronomical object class, while static methods perform actions at the class level, disregarding specific instances. Both are useful in different astronomical calculations. As an example of a static method, consider a `Constants` class which might offer a method to retrieve the gravitational constant. Because it is static, it can be called as follows:
 
 ```java
-x = Math.sqrt(100);
+G = Constants.gravitationalConstant();
 ```
 
-If `sqrt` had been an instance method, we would have instead the awkward syntax below. Luckily `sqrt` is a static method so we don't have to do this in real programs.
+If `gravitationalConstant` had been an instance method, the syntax would be more cumbersome, for instance:
 
 ```java
-Math m = new Math();
-x = m.sqrt(100);
+Constants c = new Constants();
+G = c.gravitationalConstant();
 ```
 
-Sometimes, it makes sense to have a class with both instance and static methods. For example, suppose we want the ability to compare two planets. One way to do this is to add a static method for comparing Planets.
+Sometimes, it makes sense to have a class with both instance and static methods. For example, suppose you want the capability to compare the luminosity of two stars. One way to implement this is through a static method for comparing stars.
 
 ```java
-public static Planet maxPlanet(Planet p1, Planet p2) {
-    if (p1.mass > p2.mass) {
-        return p1;
+public static Star maxLuminosityStar(Star s1, Star s2) {
+    if (s1.luminosity > s2.luminosity) {
+        return s1;
     }
-    return p2;
+    return s2;
 }
 ```
 
-This method could be invoked by, for example:
+This method could be invoked as follows:
 
 ```java
-Planet p = new Planet(15.0);
-Planet p2 = new Planet(100.0);
-Planet.maxPlanet(p, p2);
+Star s1 = new Star("Sun", 1.989e30);
+Star s2 = new Star("Betelgeuse", 5.972e35);
+Star.maxLuminosityStar(s1, s2);
 ```
 
-Observe that we've invoked using the class name, since this is a static method.
+Observe that we've called it using the class name, since it's a static method.
 
-We could also have implemented `maxPlanet` as a non-static method, e.g.
+We could also implement `maxLuminosityStar` as a non-static method, such as:
 
 ```java
-public Planet maxPlanet(Planet p2) {
-    if (this.mass > p2.mass) {
+public Star maxLuminosityStar(Star s2) {
+    if (this.luminosity > s2.luminosity) {
         return this;
     }
-    return p2;
+    return s2;
 }
 ```
 
-Above, we use the keyword `this` to refer to the current object. This method could be invoked, for example, with:
+Here, we use the keyword `this` to refer to the current object. This method could be invoked, for example, with:
 
 ```java
-Planet p = new Planet(15.0);
-Planet p2 = new Planet(100.0);
-p.maxPlanet(p2);
+Star s1 = new Star("Sun", 1.989e30);
+Star s2 = new Star("Betelgeuse", 5.972e35);
+s1.maxLuminosityStar(s2);
 ```
 
 Here, we invoke the method using a specific instance variable.
@@ -241,29 +120,30 @@ Here, we invoke the method using a specific instance variable.
 **Exercise 1.2.1**: What would the following method do? If you're not sure, try it out.
 
 ```java
-public static Planet maxPlanet(Planet p1, Planet p2) {
-    if (mass > p2.mass) {
+public static Star maxLuminosityStar(Star s1, Star s2) {
+    if (luminosity > s2.luminosity) {
         return this;
     }
-    return p2;
+    return s2;
 }
 ```
 
+
 **Static Variables**
 
-It is occasionally useful for classes to have static variables. These are properties inherent to the class itself, rather than the instance. For example, we might record that the astronomical classification for planets is "Celestial Bodies":
+It is occasionally useful for classes to have static variables. These are properties inherent to the class itself, not an instance. For example, we might record that the default star classification system is "Morgan-Keenan" with the classification enum or variable.
 
 ```java
-public class Planet {
-    public double mass;
-    public static String classification = "Celestial Bodies";
+public class Star {
+    public double luminosity;
+    public static String classificationSystem = "Morgan-Keenan";
     ...
 }
 ```
 
-Static variables should be accessed using the name of the class rather than a specific instance, e.g. you should use `Planet.classification`, not `p.classification`.
+Static variables should be accessed using the class name rather than a specific instance, e.g., you should use `Star.classificationSystem`, not `s.classificationSystem`.
 
-While Java technically allows you to access a static variable using an instance name, it is bad style, confusing, and in my opinion an error by the Java designers.
+While Java technically allows you to access a static variable using an instance name, it is bad style, confusing, and in my opinion, an oversight by the Java designers.
 
 **Exercise 1.2.2**: Complete this exercise:
 
@@ -271,51 +151,51 @@ While Java technically allows you to access a static variable using an instance 
 * Slide: [link](https://docs.google.com/presentation/d/10BFLHH8VaoYy7XaazwjaoTtLw3zvasX4HCssDruqw84/edit#slide=id.g6caa9a6fe\_057)
 * Solution Video: [link](https://youtu.be/Osuy8UEH03M)
 
-## main Sequence and method Implementation
+#### public static void main(String\[] args) <a href="#public-static-void-mainstring-args" id="public-static-void-mainstring-args"></a>
 
-Now that we've reached this stage, it's time to break down the composition of the method declaration we've used frequently. Analyzing it, we have:
+With what we've learned so far, it's time to demystify the declaration we've been using for the main method. Breaking it into pieces, we have:
 
-* `public`: All of our methods that define cosmic phenomena begin with this keyword.
-* `static`: This signifies the method's static nature, much like a cosmic constant.
-* `void`: It does not return light or data.
-* `main`: Formally recognized as the principal method in our cosmic simulations.
-* `String[] args`: This parameter acts as the initial conditions for the universe we are going to simulate.
+* `public`: So far, all of our methods start with this keyword.
+* `static`: It is a static method, not associated with any particular cosmic body.
+* `void`: It outputs no material results, just like a black hole consuming information.
+* `main`: This is the name of the focal point of the program.
+* `String[] args`: This is a constellation of parameters, passed into the main method, representing external influences.
 
-**Galactic Command Line Arguments**
+**Command Line Arguments**
 
-Since the `main` method is invoked by the Java interpreter analogous to how astronomers might initiate observations with telescopes, it is the universe's framework that provides these conditions. These typically correspond to the command line parameters similar to how parameters define the observational setup in an astrophysical survey. Consider the program `GalaxySimulator` below:
+Since main is initiated by the Java interpreter, akin to the cosmic event causing a supernova, rather than another Java class, it is the interpreter's job to supply these inputs. They refer typically to the command line influences, analogous to external forces acting on a star. For example, consider the program `ArgsDemo` below:
 
 ```java
-public class GalaxySimulator {
+public class ArgsDemo {
     public static void main(String[] args) {
-        System.out.println(args[0]);
+        System.out.println(args[0]);  // Output the first element, much like observing the first star of a constellation.
     }
 }
 ```
 
-This cosmic program prints out the initial parameter, e.g.
+This program reveals the 0th cosmic argument, e.g.
 
 ```
-$ java GalaxySimulator MilkyWay Andromeda Triangulum
-MilkyWay
+$ java ArgsDemo universe expanding rapidly
+universe
 ```
 
-In this astrophysical example, `args` will be an array of Strings, where the elements are {"MilkyWay", "Andromeda", "Triangulum"}.
+In the example above, `args` will be an array of Strings, where the entries are analogous to planets orbiting a central star: {"universe", "expanding", "rapidly"}.
 
-**Calculating Cosmic Elapsed Time**
+**Summing Command Line Arguments**
 
-**Exercise 1.2.3**: Attempt to write a program that calculates the elapsed time since the big bang using the input as cosmic eras in billions of years. For a detailed method, see the cosmic lecture or the algorithm provided on our simulation archives.
+**Exercise 1.2.3**: Attempt to write a program that sums up the command line arguments, assuming they are numerical as if calculating the combined mass of celestial bodies. For an astronomical solution, refer to the webcast or the code available on GitHub.
 
-#### Utilizing Cosmic Libraries <a href="#using-cosmic-libraries" id="using-cosmic-libraries"></a>
+#### Using Libraries <a href="#using-libraries" id="using-libraries"></a>
 
-Understanding how to access and implement pre-existing cosmic data libraries is an invaluable skill for an astrophysicist. In the expansive cosmos of data, efficiency and accuracy can be significantly enhanced by relying on established theories and models.
+One of the primary skills for a computational astronomer is knowing how to locate and utilize existing libraries. In the vast universe of modern programming, it is often worthwhile to save yourself from computational black holes and debugging supernovae by reaching out to the web for assistance.
 
-In this course, you’re encouraged to explore libraries, keeping these guidelines in mind:
+In this course, you're welcome to do this, with the following observatory guidelines:
 
-* Avoid using any cosmic libraries that have not been provided.
-* Acknowledge and reference your sources of astronomical inspiration.
-* Refrain from directly searching solutions for specific space mission challenges or research assignments.
+* Do not use libraries that we do not provide—stay within our galaxy of allowed tools.
+* Cite your interstellar sources.
+* Do not search for specific solutions to constellation homework or project challenges.
 
-For instance, it's appropriate to search for "convert parsecs to light years in Java," but inappropriate to search for "exact algorithm for detecting exoplanets specific to our galactic survey project".
+For example, it's fine to search for "convert String integer Java"—a task as routine as measuring a star's luminosity. However, it is not OK to search for "Project 2048 Berkeley" as if uncovering the secrets of the universe.
 
-For more on collaboration, universal ethics, and our research integrity policy, refer to the university interstellar guidebook.
+For more information on collaboration and academic honesty policies across our scientific domains, see the course syllabus.
