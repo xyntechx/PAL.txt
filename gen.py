@@ -10,8 +10,8 @@ from utils import read
 
 def no_recomp(reference_text:str, user_interest:str, save_dir:str):
     # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-    p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
+    p_a_llm = pipeline.PC("A", user_interest, reference_text, save_dir)
+    p_b_llm = pipeline.PS("B", user_interest, reference_text, save_dir)
     j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
 
     # Run content-by-content Personalization LLM -- draft
@@ -47,8 +47,8 @@ def no_recomp(reference_text:str, user_interest:str, save_dir:str):
 
 def complete(reference_text:str, user_interest:str, save_dir:str):
     # Initialize LLMs
-    p_a_llm = pipeline.CoP("A", user_interest, reference_text, save_dir)
-    p_b_llm = pipeline.ChP("B", user_interest, reference_text, save_dir)
+    p_a_llm = pipeline.PC("A", user_interest, reference_text, save_dir)
+    p_b_llm = pipeline.PS("B", user_interest, reference_text, save_dir)
     j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
 
     # Run content-by-content Personalization LLM -- draft

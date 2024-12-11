@@ -6,7 +6,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 
-class PersonalizerChapter():
+class PersonalizerStructure():
     def __init__(self, name:str, user_interest:str, reference_text:str, save_dir:str):
         self.client = OpenAI()
         self.name = name

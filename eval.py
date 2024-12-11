@@ -10,10 +10,10 @@ from utils import read
 
 def main(content_one:str, content_two:str, user_interest:str, save_dir:str):
     # Initialize LLMs (Personalization LLM types don't matter)
-    p_a_llm = pipeline.CoP("A", user_interest, "", save_dir)
+    p_a_llm = pipeline.PC("A", user_interest, "", save_dir)
     p_a_llm.final_draft = content_one
 
-    p_b_llm = pipeline.ChP("B", user_interest, "", save_dir)
+    p_b_llm = pipeline.PS("B", user_interest, "", save_dir)
     p_b_llm.final_draft = content_two
 
     j_llm = pipeline.Judge(user_interest, "", save_dir)
