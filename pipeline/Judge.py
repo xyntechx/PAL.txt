@@ -15,6 +15,96 @@ class Judge():
         self.final_choice = ""
         self.final_explanation = ""
 
+    
+    def give_feedback_student(self, PLLM) -> None:
+        logger.info("Judge LLM giving feedback...")
+
+        # class Eval(BaseModel):
+        #     category: str
+        #     score: int
+        #     explanation: str
+
+        # class Evals(BaseModel):
+        #     evals: list[Eval]
+
+        # class EvalsCompetitive(BaseModel):
+        #     evals: list[Eval]
+        #     summary: str
+        class Evals(BaseModel):
+            feedback: str
+
+        completion = self.client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are a student proficient in {self.user_interest} who is learning computer science (CS).  Write feedback for the textbook chapter in terms of its helpfulness in your learning of CS. Only output how you want the chapter to change. Remember that the layout of the chapter cannot change.",
+                },
+                {
+                    "role": "user",
+                    "content": f"[The Start of Chapter]\n{PLLM.draft}\n[The End of Chapter]",
+                },
+            ],
+            response_format=Evals,
+        )
+
+        res = completion.choices[0].message.parsed
+
+        # for eval in res.evals:
+        #     PLLM.judge_feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
+
+        # if compete:
+        #     PLLM_other.judge_summ_opp = res.summary
+        #     self._save_summary(PLLM, PLLM_other)
+
+        PLLM.feedback_student = res.feedback
+        self._save_feedback_student(PLLM)
+
+    
+    def give_feedback_expert(self, PLLM) -> None:
+        logger.info("Judge LLM giving feedback...")
+
+        # class Eval(BaseModel):
+        #     category: str
+        #     score: int
+        #     explanation: str
+
+        # class Evals(BaseModel):
+        #     evals: list[Eval]
+
+        # class EvalsCompetitive(BaseModel):
+        #     evals: list[Eval]
+        #     summary: str
+        class Evals(BaseModel):
+            feedback: str
+
+        completion = self.client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are an expert in both {self.user_interest} and computer science (CS). Write feedback for the textbook chapter in terms of its accuracy for both {self.user_interest} and CS concepts. Only output how you want the chapter to change. Remember that the layout of the chapter cannot change.",
+                },
+                {
+                    "role": "user",
+                    "content": f"[The Start of Chapter]\n{PLLM.draft}\n[The End of Chapter]",
+                },
+            ],
+            response_format=Evals,
+        )
+
+        res = completion.choices[0].message.parsed
+
+        # for eval in res.evals:
+        #     PLLM.judge_feedback += f"# Evaluation category: {eval.category}\n\nScore: {eval.score}/3\n\nFeedback: {eval.explanation}\n\n"
+
+        # if compete:
+        #     PLLM_other.judge_summ_opp = res.summary
+        #     self._save_summary(PLLM, PLLM_other)
+
+        PLLM.feedback_expert = res.feedback
+        self._save_feedback_expert(PLLM)
+
 
     def give_feedback(self, PLLM, PLLM_other=None, compete:bool=False) -> None:
         logger.info("Judge LLM giving feedback...")
@@ -122,11 +212,18 @@ class Judge():
         self._save_score(PLLM)
 
 
-    def _save_feedback(self, PLLM) -> None:
+    def _save_feedback_student(self, PLLM) -> None:
         Path(f"{self.save_dir}/{PLLM.name}").mkdir(parents=True, exist_ok=True)
-        with open(f"{self.save_dir}/{PLLM.name}/feedback.md", "w", encoding="utf-8") as file:
-            file.write(PLLM.judge_feedback)
-            logger.info(f"Judge feedback for {PLLM.name} saved in {self.save_dir}/{PLLM.name}/feedback.md")
+        with open(f"{self.save_dir}/{PLLM.name}/feedback_student.md", "w", encoding="utf-8") as file:
+            file.write(PLLM.feedback_student)
+            logger.info(f"Judge feedback for {PLLM.name} saved in {self.save_dir}/{PLLM.name}/feedback_student.md")
+
+
+    def _save_feedback_expert(self, PLLM) -> None:
+        Path(f"{self.save_dir}/{PLLM.name}").mkdir(parents=True, exist_ok=True)
+        with open(f"{self.save_dir}/{PLLM.name}/feedback_expert.md", "w", encoding="utf-8") as file:
+            file.write(PLLM.feedback_expert)
+            logger.info(f"Judge feedback for {PLLM.name} saved in {self.save_dir}/{PLLM.name}/feedback_expert.md")
 
 
     def _save_score(self, PLLM) -> None:
