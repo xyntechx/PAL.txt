@@ -25,16 +25,15 @@ class PersonalizerStructure():
         self.final_draft = ""
 
         self.judge_score = ""
+        self.feedback_student = ""
+        self.feedback_expert = ""
 
 
     def extract_sections(self) -> None:
         logger.info(f"{self.name} extracting sections...")
 
-        class Section(BaseModel):
-            section: str
-
         class Sections(BaseModel):
-            sections: list[Section]
+            sections: list[str]
 
         completion = self.client.beta.chat.completions.parse(
             model="gpt-4o-2024-08-06",
@@ -45,7 +44,7 @@ class PersonalizerStructure():
                 },
                 {
                     "role": "user",
-                    "content": f"{self.reference_text}",
+                    "content": f"{self.draft}",
                 },
             ],
             temperature=0,
@@ -54,18 +53,13 @@ class PersonalizerStructure():
 
         res = completion.choices[0].message.parsed
         self.sections = res.sections
+        # self.draft = "\n\n".join(self.sections)
+        # self._save_draft()
 
 
     def personalize(self) -> None:
-        logger.info(f"{self.name} personalizing chapter section-by-section...")
+        logger.info(f"{self.name} personalizing chapter with one-to-one mapping...")
 
-        for section in tqdm(self.sections):
-            self.draft_chunks.append(self._personalize_section(section.section))
-
-        self.draft = "\n\n".join(self.draft_chunks)
-
-
-    def _personalize_section(self, section:str) -> None:
         class Content(BaseModel):
             text: str
 
@@ -74,58 +68,36 @@ class PersonalizerStructure():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Your task is to modify the explanations and examples in the provided CS textbook chapter section (written in Markdown) using {self.user_interest} concepts. Ensure the layout of your personalized section exactly follows the layout of the original section. Do not leave out any paragraph, code block, etc.",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Your task is to modify the explanations and examples in the provided CS textbook chapter (written in Markdown) using {self.user_interest} concepts. Ensure the layout of your personalized chapter exactly follows the layout of the original section. Do not leave out any paragraph, code block, etc.",
                 },
                 {
                     "role": "user",
-                    "content": f"{section}",
+                    "content": f"{self.reference_text}",
                 },
             ],
             response_format=Content,
         )
 
         res = completion.choices[0].message.parsed
-        return res.text
-
-
-    def create_overview(self) -> None:
-        logger.info(f"{self.name} creating overview...")
-
-        class Overview(BaseModel):
-            text: str
-
-        completion = self.client.beta.chat.completions.parse(
-            model="gpt-4o-2024-08-06",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"You are a helpful computer science (CS) professor. Given the following CS textbook chapter, write a brief overview of the concepts taught. Create an h1 title for the chapter and at most 2 paragraphs of overview. Your output should be in markdown format. Refrain from generating irrelevant details such as the chapter number.",
-                },
-                {
-                    "role": "user",
-                    "content": self.draft,
-                },
-            ],
-            response_format=Overview,
-        )
-
-        res = completion.choices[0].message.parsed
-
-        self.draft_chunks.insert(0, res.text.strip())
-        self.draft = "\n\n".join(self.draft_chunks)
+        self.draft = res.text
         self._save_draft()
 
 
-    def refine(self) -> None:
-        logger.info(f"{self.name} refining draft based on feedback...")
-        self.final_chunks.append(self.draft_chunks[0]) # include overview
-        for chunk in tqdm(self.draft_chunks[1:]): # exclude overview from refinement
-            self.final_chunks.append(self._refine_subsection(chunk))
-        self.final_draft = "\n\n".join(self.final_chunks)
-        self._save_final()
+    def insert_analogies(self, other):
+        text = ""
+        for concept in tqdm(other.draft_dict):
+            section = list(filter(lambda x: concept in x, self.sections))
+            if len(section) == 0:
+                continue
+            section = section[0]
+            analogy = other.draft_dict[concept]
+            text += f"{section}\n\n{analogy}\n\n"
+        self.draft_analogy = text
+        self.draft = text
+        self._save_draft_analogy()
 
 
-    def _refine_subsection(self, subsection:str) -> str:
+    def _insert_analogy(self, analogy):
         class Content(BaseModel):
             text: str
 
@@ -134,11 +106,43 @@ class PersonalizerStructure():
             messages=[
                 {
                     "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is open to feedback. You have previously crafted the provided CS textbook chapter subsection for a friend who is interested in {self.user_interest}. Address the provided feedback to improve the CS textbook chapter subsection. The improved subsection should be similar in structure to the old subsection; your improvements does not need to drastically change the old subsection.{' You are also given an evaluation summary of a CS textbook chapter modified by another AI assistant; you may learn from that summary to improve your own chapter. Do not output any comments about the summary or your improvements, and output the chapter directly.' if self.judge_summ_opp else ''}",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Your task is to add the provided analogy text into the provided CS textbook chapter (written in Markdown) in the most helpful place. Ensure the layout of your personalized chapter exactly follows the layout of the original section, except for the addition of the provided analogy text. Do not leave out any paragraph, code block, etc.",
                 },
                 {
                     "role": "user",
-                    "content": f"[The Start of Old Subsection]\n{subsection}\n[The End of Old Subsection]\n\n[The Start of Feedback for Your Work]\n{self.judge_feedback}\n[The End of Feedback for Your Work]\n\n[The Start of Evaluation Summary for Another Assistant's Work]\n{self.judge_summ_opp}\n[The End of Evaluation Summary for Another Assistant's Work]",
+                    "content": f"[The Start of Analogy Text]\n{analogy}\n[The End of Analogy Text]\n\n[The Start of Textbook Chapter]\n{self.draft}\n[The End of Textbook Chapter]",
+                },
+            ],
+            response_format=Content,
+            temperature=0
+        )
+
+        res = completion.choices[0].message.parsed
+        return res.text
+    
+
+    def refine_student(self):
+        self.draft = ""
+        for section in tqdm(self.sections):
+            self.draft += f"{self._refine_student(section)}\n\n"
+
+
+    def _refine_student(self, section) -> str:
+        logger.info(f"{self.name} refining draft based on feedback...")
+
+        class Content(BaseModel):
+            text: str
+
+        completion = self.client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is receptive to feedback. A student gave you feedback to improve the old CS textbook section. Output the improved old section based on the feedback and only the feedback. Only make minor edits.",
+                },
+                {
+                    "role": "user",
+                    "content": f"[The Start of Old Section]\n{section}\n[The End of Old Section]\n\n[The Start of Student Feedback]\n{self.feedback_student}\n[The End of Student Feedback]",
                 },
             ],
             response_format=Content,
@@ -146,6 +150,44 @@ class PersonalizerStructure():
 
         res = completion.choices[0].message.parsed
         return res.text
+        # self._save_final()
+
+
+    def refine_expert(self):
+        self.draft = ""
+        for section in tqdm(self.sections):
+            self.draft += f"{self._refine_expert(section)}\n\n"
+
+
+    def _refine_expert(self, section) -> str:
+        logger.info(f"{self.name} refining draft based on feedback...")
+
+        class Content(BaseModel):
+            text: str
+
+        completion = self.client.beta.chat.completions.parse(
+            model="gpt-4o-2024-08-06",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"You are an expert in computer science (CS) and {self.user_interest} who is receptive to feedback. Another expert gave you feedback to improve the old CS textbook chapter. Output the improved old section based on the feedback and only the feedback. Only make minor edits.",
+                },
+                {
+                    "role": "user",
+                    "content": f"[The Start of Old Section]\n{section}\n[The End of Old Section]\n\n[The Start of Expert Feedback]\n{self.feedback_expert}\n[The End of Expert Feedback]",
+                },
+            ],
+            response_format=Content,
+        )
+
+        res = completion.choices[0].message.parsed
+        return res.text
+        # self._save_final()
+
+
+    def finalize(self):
+        self.final_draft = self.draft
+        self._save_final()
 
 
     def _save_draft(self) -> None:
@@ -153,6 +195,12 @@ class PersonalizerStructure():
         with open(f"{self.save_dir}/{self.name}/draft.md", "w", encoding="utf-8") as file:
             file.write(self.draft)
             logger.info(f"Draft personalized chapter saved in {self.save_dir}/{self.name}/draft.md")
+
+    def _save_draft_analogy(self) -> None:
+        Path(f"{self.save_dir}/{self.name}").mkdir(parents=True, exist_ok=True)
+        with open(f"{self.save_dir}/{self.name}/draft_analogy.md", "w", encoding="utf-8") as file:
+            file.write(self.draft_analogy)
+            logger.info(f"Draft personalized chapter saved in {self.save_dir}/{self.name}/draft_analogy.md")
 
 
     def _save_final(self) -> None:
