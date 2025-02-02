@@ -15,18 +15,11 @@ class PersonalizerStructure():
         self.save_dir = save_dir
 
         self.sections = []
-
         self.draft_chunks = []
         self.draft = ""
-        self.judge_feedback = ""
-        self.judge_summ_opp = ""
-
-        self.final_chunks = []
-        self.final_draft = ""
-
-        self.judge_score = ""
         self.feedback_student = ""
         self.feedback_expert = ""
+        self.final_draft = ""
 
 
     def extract_sections(self) -> None:
@@ -53,8 +46,6 @@ class PersonalizerStructure():
 
         res = completion.choices[0].message.parsed
         self.sections = res.sections
-        # self.draft = "\n\n".join(self.sections)
-        # self._save_draft()
 
 
     def personalize(self) -> None:
@@ -85,41 +76,21 @@ class PersonalizerStructure():
 
     def insert_analogies(self, other):
         text = ""
+
         for concept in tqdm(other.draft_dict):
             section = list(filter(lambda x: concept in x, self.sections))
+
             if len(section) == 0:
                 continue
+
             section = section[0]
             analogy = other.draft_dict[concept]
             text += f"{section}\n\n{analogy}\n\n"
+
         self.draft_analogy = text
         self.draft = text
         self._save_draft_analogy()
 
-
-    def _insert_analogy(self, analogy):
-        class Content(BaseModel):
-            text: str
-
-        completion = self.client.beta.chat.completions.parse(
-            model="gpt-4o-2024-08-06",
-            messages=[
-                {
-                    "role": "system",
-                    "content": f"You are an expert in computer science (CS) and {self.user_interest}. Your task is to add the provided analogy text into the provided CS textbook chapter (written in Markdown) in the most helpful place. Ensure the layout of your personalized chapter exactly follows the layout of the original section, except for the addition of the provided analogy text. Do not leave out any paragraph, code block, etc.",
-                },
-                {
-                    "role": "user",
-                    "content": f"[The Start of Analogy Text]\n{analogy}\n[The End of Analogy Text]\n\n[The Start of Textbook Chapter]\n{self.draft}\n[The End of Textbook Chapter]",
-                },
-            ],
-            response_format=Content,
-            temperature=0
-        )
-
-        res = completion.choices[0].message.parsed
-        return res.text
-    
 
     def refine_student(self):
         self.draft = ""
@@ -150,7 +121,6 @@ class PersonalizerStructure():
 
         res = completion.choices[0].message.parsed
         return res.text
-        # self._save_final()
 
 
     def refine_expert(self):
@@ -182,7 +152,6 @@ class PersonalizerStructure():
 
         res = completion.choices[0].message.parsed
         return res.text
-        # self._save_final()
 
 
     def finalize(self):
