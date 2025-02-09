@@ -1,0 +1,1 @@
+['SLLists', 'Improvement #1: Rebranding', 'Improvement #2: Bureaucracy', 'addFirst and getFirst', 'Improvement #3: Public vs. Private', 'Improvement #4: Nested Classes', 'addLast() and size()', 'Improvement #5: Caching', 'Improvement #6: The Empty List', 'Improvement #6b: Sentinel Nodes', 'Invariants']
