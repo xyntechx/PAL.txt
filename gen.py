@@ -81,7 +81,8 @@ def main(og_chapter_src:str, user_interest:str, strategy_name:str):
     course_name, chapter_title = og_chapter_src.split("/")[1:3]
     chapter_title = "-".join(chapter_title.split(".")[:-1])
     curr_date = datetime.now()
-    save_dir = f"output/{course_name}/{chapter_title}/{curr_date.year}{curr_date.month}{curr_date.day}{curr_date.hour}{curr_date.minute}{curr_date.second}"
+    timestamp_str = curr_date.strftime("%Y-%m-%d_%H-%M-%S")
+    save_dir = f"output/{course_name}/{chapter_title}/{timestamp_str}"
 
     # Document execution strategy
     Path(save_dir).mkdir(parents=True, exist_ok=True)
