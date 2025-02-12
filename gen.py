@@ -69,6 +69,40 @@ def complete(reference_text:str, user_interest:str, save_dir:str):
     p_b_llm.refine_expert()
     p_b_llm.finalize()
 
+def no_analogy(reference_text:str, user_interest:str, save_dir:str):
+    # Initialize LLMs
+    p_b_llm = pipeline.PS("B", user_interest, reference_text, save_dir)
+    j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
+
+    # Personalize first-pass
+    p_b_llm.personalize()
+    p_b_llm.extract_sections()
+
+    # LLM-as-a-Judge with simulation (student & expert)
+    j_llm.give_feedback_student(p_b_llm)
+    j_llm.give_feedback_expert(p_b_llm)
+
+    # Improve based on feedback
+    p_b_llm.refine_student()
+    p_b_llm.refine_expert()
+    p_b_llm.finalize()
+
+def no_feedback(reference_text:str, user_interest:str, save_dir:str):
+        # Initialize LLMs
+    p_a_llm = pipeline.PC("A", user_interest, reference_text, save_dir)
+    p_b_llm = pipeline.PS("B", user_interest, reference_text, save_dir)
+    j_llm = pipeline.Judge(user_interest, reference_text, save_dir)
+
+    # Creating analogy-driven text
+    p_a_llm.extract_concepts()
+    p_a_llm.create_analogies()
+
+    # Personalize first-pass
+    p_b_llm.personalize()
+    p_b_llm.extract_sections()
+    p_b_llm.insert_analogies(p_a_llm)
+
+    p_b_llm.finalize()
 
 def main(og_chapter_src:str, user_interest:str, strategy_name:str):
     # Get relevant strategy function
@@ -100,6 +134,8 @@ if __name__ == "__main__":
     STRATEGIES = {
         "complete": complete, # all components included
         "no_recomp": no_recomp, # all components included except Reinforcement Competition
+        "no_analogy": no_analogy, # all components included except Analogy Creation
+        "no_feedback": no_feedback, # all components included except Feedback
     }
 
     parser = ArgumentParser()
