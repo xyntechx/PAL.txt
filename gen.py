@@ -104,6 +104,13 @@ def no_feedback(reference_text:str, user_interest:str, save_dir:str):
 
     p_b_llm.finalize()
 
+STRATEGIES = {
+    "complete": complete, # all components included
+    "no_recomp": no_recomp, # all components included except Reinforcement Competition
+    "no_analogy": no_analogy, # all components included except Analogy Creation
+    "no_feedback": no_feedback, # all components included except Feedback
+}
+
 def main(og_chapter_src:str, user_interest:str, strategy_name:str):
     # Get relevant strategy function
     strategy = STRATEGIES[strategy_name]
@@ -116,7 +123,7 @@ def main(og_chapter_src:str, user_interest:str, strategy_name:str):
     chapter_title = "-".join(chapter_title.split(".")[:-1])
     curr_date = datetime.now()
     timestamp_str = curr_date.strftime("%Y-%m-%d_%H-%M-%S")
-    save_dir = f"output/{course_name}/{chapter_title}/{timestamp_str}"
+    save_dir = f"output/{course_name}/{chapter_title}/{timestamp_str}_{user_interest}"
 
     # Document execution strategy
     Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -130,14 +137,6 @@ def main(og_chapter_src:str, user_interest:str, strategy_name:str):
 
 if __name__ == "__main__":
     load_dotenv()
-
-    STRATEGIES = {
-        "complete": complete, # all components included
-        "no_recomp": no_recomp, # all components included except Reinforcement Competition
-        "no_analogy": no_analogy, # all components included except Analogy Creation
-        "no_feedback": no_feedback, # all components included except Feedback
-    }
-
     parser = ArgumentParser()
     parser.add_argument("-c", "--chapter", dest="chapter", help="The original textbook chapter to personalize", required=True)
     parser.add_argument("-i", "--interest", dest="interest", help="Your personal/professional interest", required=True)
